@@ -8,11 +8,16 @@ class UserInputList extends StatefulWidget {
   @override
   _UserInputListState createState() => _UserInputListState();
 }
+/*  class Category {
+  String name;
+  List<String> items;
 
+  Category(this.name, this.items);
+} */
 class _UserInputListState extends State<UserInputList> {
   final TextEditingController _controller = TextEditingController();
   final List<String> items = [];
-  final List<Category> categories = [];
+  // final List<Category> categories = [];
 
   @override
   Widget build(BuildContext context) {
@@ -48,16 +53,16 @@ class _UserInputListState extends State<UserInputList> {
                 String item = _controller.text;
                 items.add(_controller.text);
                 _controller.clear();
-                Category category = categories.firstWhere((c) => c.name == item);
+/*                 Category category = categories.firstWhere((c) => c.name == item);
                   if (category == null) {
-                    category = Category(name: item, items: []);
+                    category = Category(item, []);
                     categories.add(category);
                   }
-                  category.items.add(item);
+                  category.items.add(item); */
               });
             },
           ),
-                      Expanded(
+/*                       Expanded(
               child: ListView.builder(
                 itemCount: categories.length,
                 itemBuilder: (context, categoryIndex) {
@@ -70,7 +75,7 @@ class _UserInputListState extends State<UserInputList> {
                   );
                 },
               ),
-                      ),
+                      ), */
                       Expanded(
               child: ListView.builder(
                  itemCount: items.length,
@@ -113,16 +118,6 @@ class _UserInputListState extends State<UserInputList> {
       )
     );
   }
-}
-class Category {
-  String name = "";
-  List <String> items = List<String>();
-
-  Category (String name, List <String> items) {
-    this.name = name;
-    this.items = items;
-  }
- 
 }
 
 class CustomSearchDelegate extends SearchDelegate {
