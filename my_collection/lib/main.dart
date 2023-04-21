@@ -1,34 +1,61 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<void> saveList(List<String> list) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String jsonString = jsonEncode(list);
+  await prefs.setString('list', jsonString);
+}
+Future<List<String>> getList() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String jsonString = prefs.getString('list') ?? '';
+  List<String> list = List<String>.from(jsonDecode(jsonString));
+  return list;
+}
 void main() {
-  runApp(UserInputList());
+  runApp(MaterialApp(
+    home: Container(
+      child: UserInputList(),
+    ),
+  ));
 }
 
 class UserInputList extends StatefulWidget {
   @override
   _UserInputListState createState() => _UserInputListState();
-}
-/*  class Category {
-  String name;
-  List<String> items;
 
-  Category(this.name, this.items);
-} */
+}
+
 class _UserInputListState extends State<UserInputList> {
   final TextEditingController _controller = TextEditingController();
-  final List<String> items = [];
-  // final List<Category> categories = [];
+  List<String> items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  void _loadItems() async {
+    items = await getList();
+    setState(() {});
+  }
+  void _saveItems() async {
+    await saveList(items);
+  }
 
   @override
   Widget build(BuildContext context) {
      return MaterialApp(
-      title: 'Hot WHeels Collection',
+      title: 'Hot Wheels Collection',
       home: Scaffold(
       appBar: AppBar(
         title: const Text('Hot Wheels Collection'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               showSearch(
                 context: context,
@@ -53,69 +80,75 @@ class _UserInputListState extends State<UserInputList> {
                 String item = _controller.text;
                 items.add(_controller.text);
                 _controller.clear();
-/*                 Category category = categories.firstWhere((c) => c.name == item);
-                  if (category == null) {
-                    category = Category(item, []);
-                    categories.add(category);
-                  }
-                  category.items.add(item); */
+                _saveItems(); // Save the updated list
               });
             },
           ),
-/*                       Expanded(
-              child: ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, categoryIndex) {
-                  Category category = categories[categoryIndex];
-                  return ExpansionTile(
-                    title: Text(category.name),
-                    children: category.items.map((item) => ListTile(
-                      title: Text(item),
-                    )).toList(),
-                  );
-                },
-              ),
-                      ), */
-                      Expanded(
+            Expanded(
               child: ListView.builder(
                  itemCount: items.length,
                   itemBuilder: (context, index) {
                   final item = items[index];
                      return Dismissible(
-                    key: Key(item),
-           onDismissed: (direction) {
-          setState(() {
-            items.removeAt(index);
-          });
-        },
-        child: ListTile(
-          title: Text(item),
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              setState(() {
-                items.removeAt(index);
-              });
-            },
-          ),
-        ),
-      );
-    },
-  ),
-),
-          Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(items[index]),
+                       key: Key(item),
+                        onDismissed: (direction) {
+                        setState(() {
+                          items.removeAt(index);
+                          _saveItems(); // Save the updated list
+                        });
+                      },
+                      child: ListTile(
+                        title: Text(item),
+                        onTap: () {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SecondRoute(item: item),
+                            ),
+                          ).then((editedItem) {
+                            setState(() {
+                            items[index] = editedItem;
+                            _saveItems(); // Save the updated list
+                           });
+                       });
+                    },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                             Navigator.push(
+                               context,
+                                MaterialPageRoute(
+                                  builder: (context) => SecondRoute(item: item),
+                                ),
+                              ).then((editedItem) {
+                                 setState(() {
+                                  items[index] = editedItem;
+                                  _saveItems(); // Save the updated list
+                                });
+                              });
+                            },
+                          ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  items.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      )
                 );
               },
             ),
           ),
         ],
       ),
-      )
+      ),
     );
   }
 }
@@ -128,10 +161,10 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.arrow_back),
+      icon: const Icon(Icons.arrow_back),
       onPressed: () {
         close(context, null);
-      },
+      }
     );
   }
 
@@ -167,4 +200,46 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   String get searchFieldLabel => 'Search items...';
+}
+
+class SecondRoute extends StatefulWidget {
+  final String item;
+  SecondRoute({required this.item});
+
+    @override
+  _SecondRouteState createState() => _SecondRouteState();
+}
+class _SecondRouteState extends State<SecondRoute> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = widget.item;
+  }
+    @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Item'),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(
+              hintText: 'Enter a Car',
+            ),
+          ),
+          ElevatedButton(
+            child: const Text('Save Changes'),
+            onPressed: () {
+              String editedItem = _controller.text;
+              Navigator.pop(context, editedItem);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
