@@ -30,6 +30,7 @@ class UserInputList extends StatefulWidget {
 
 class _UserInputListState extends State<UserInputList> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController(); 
   List<String> items = [];
   List<String> categories = [];
 
