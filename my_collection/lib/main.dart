@@ -32,7 +32,7 @@ class _UserInputListState extends State<UserInputList> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _categoryController = TextEditingController(); 
   List<String> items = [];
-  List<String> categories = [];
+
 
   @override
   void initState() {
@@ -86,27 +86,11 @@ class _UserInputListState extends State<UserInputList> {
               });
             },
           ),
-          TextField(
-            controller: _categoryController,
-            decoration: InputDecoration(
-              labelText: 'Add new category',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                categories.add(_categoryController.text);
-              });
-              _categoryController.clear();
-            },
-            child: Text('Add'),
-          ),
             Expanded(
               child: ListView.builder(
                  itemCount: items.length,
                   itemBuilder: (context, index) {
                   final item = items[index];
-                  final category = categories[index % categories.length];
                      return Dismissible(
                        key: Key(item),
                         onDismissed: (direction) {
@@ -115,22 +99,9 @@ class _UserInputListState extends State<UserInputList> {
                           _saveItems(); // Save the updated list
                         });
                       },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (index % categories.length == 0) ...[
-                          SizedBox(height: 8),
-                          Text(category,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                        ],
-                        ListTile(
-                          title: Text(item),
-                          onTap: () {
+                      child: ListTile(
+                        title: Text(item),
+                        onTap: () {
                             Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -173,9 +144,7 @@ class _UserInputListState extends State<UserInputList> {
                           ],
                         ),
                       )
-                  ] 
                 );
-                )
               },
             ),
           ),
